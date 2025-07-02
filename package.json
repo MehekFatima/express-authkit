@@ -1,0 +1,74 @@
+{
+  "name": "express-authkit",
+  "version": "1.0.0",
+  "description": "Plug-and-play authentication middleware for Express with JWT, refresh tokens, RBAC, sessions, and built-in CLI.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "bin": {
+    "express-authkit": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "dev": "tsx bin/cli.ts",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MehekFatima/express-authkit.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "keywords": [
+    "express",
+    "auth",
+    "jwt",
+    "rbac",
+    "authentication",
+    "middleware",
+    "refresh-token",
+    "cli",
+    "redis",
+    "node"
+  ],
+  "author": "Mehek Fatima",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^14.0.0",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "figlet": "^1.8.1",
+    "jsonwebtoken": "^8.5.1",
+    "redis": "^5.5.6"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/figlet": "^1.7.0",
+    "@types/jest": "^30.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.0.3",
+    "redis-mock": "^0.56.3",
+    "supertest": "^7.1.1",
+    "ts-jest": "^29.4.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,34 @@
+# Node.js
+node_modules/
+dist/
+bin/**/*.js
+bin/**/*.map
+bin/**/*.d.ts
+
+# Environment files
+.env
+.npmrc
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Jest coverage
+coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Optional npm cache folder
+.npm/
