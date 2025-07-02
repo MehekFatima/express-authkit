@@ -21,7 +21,7 @@ Plug-and-play authentication middleware for Express with JWT, refresh tokens, ro
 ## Installation
 
 ```bash
-npm install express-authkit
+npm install express-authx
 ```
 ## Usage
 
@@ -29,7 +29,7 @@ npm install express-authkit
 
 ```ts
 import express from 'express';
-import { TokenManager, authMiddleware } from 'express-authkit';
+import { TokenManager, authMiddleware } from 'express-authx';
 
 const tokenManager = new TokenManager(
   { secret: process.env.ACCESS_SECRET!, expiresIn: '15m' },
@@ -53,7 +53,7 @@ app.listen(3000);
 ### Redis Store (Optional)
 
 ```ts
-import { RedisStore } from 'express-authkit';
+import { RedisStore } from 'express-authx';
 
 const redisStore = new RedisStore('redis://localhost:6379');
 ```

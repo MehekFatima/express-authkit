@@ -1,5 +1,5 @@
 {
-  "name": "express-authkit",
+  "name": "express-authx",
   "version": "1.0.0",
   "description": "Plug-and-play authentication middleware for Express with JWT, refresh tokens, RBAC, sessions, and built-in CLI.",
   "main": "dist/index.js",
