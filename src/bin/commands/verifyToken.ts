@@ -1,14 +1,14 @@
-import { Command } from 'commander';
-import { TokenManager } from '../../token/tokenManager';
-
+import { Command } from "commander";
+import { TokenManager } from "../../token/tokenManager";
 export const verifyCommand = new Command('verify-token')
   .description('Verify a token and show the payload')
   .requiredOption('--token <token>', 'JWT token to verify')
   .option('--access-secret <secret>', 'Access token secret', process.env.ACCESS_SECRET || 'default-access')
-  .option('--refresh', 'Verify as refresh token', false)  // boolean flag
-  .action((opts) => {
+  .option('--refresh-secret <secret>', 'Refresh token secret', process.env.REFRESH_SECRET || process.env.ACCESS_SECRET || 'default-access')
+  .option('--refresh', 'Verify as refresh token', false)
+  .action((opts: { accessSecret: any; refreshSecret: any; refresh: any; token: any; }) => {
     const accessSecret = opts.accessSecret || process.env.ACCESS_SECRET || 'default-access';
-    const refreshSecret = process.env.REFRESH_SECRET || accessSecret; // fallback to accessSecret if REFRESH_SECRET missing
+    const refreshSecret = opts.refreshSecret || process.env.REFRESH_SECRET || accessSecret;
 
     const tokenManager = new TokenManager(
       { secret: accessSecret, expiresIn: process.env.ACCESS_EXPIRY || '15m' },

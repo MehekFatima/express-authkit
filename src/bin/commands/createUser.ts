@@ -20,6 +20,7 @@ export const createUserCommand = new Command('create-user')
     const tokens = tokenManager.signTokens({ id, role });
 
     console.log('✅ User created!');
-    console.log('Access Token:\n', tokens.accessToken);
-    console.log('Refresh Token:\n', tokens.refreshToken);
+    console.log(`Access Token:\n${tokens.accessToken}`);
+    console.log(`Refresh Token:\n${tokens.refreshToken}`);
+
   });
