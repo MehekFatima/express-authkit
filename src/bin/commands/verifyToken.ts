@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TokenManager } from '../../src/token/tokenManager';
+import { TokenManager } from '../../token/tokenManager';
 
 export const verifyCommand = new Command('verify-token')
   .description('Verify a token and show the payload')

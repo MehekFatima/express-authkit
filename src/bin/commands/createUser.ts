@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TokenManager } from '../../src/token/tokenManager';
+import { TokenManager } from '../../token/tokenManager';
 
 export const createUserCommand = new Command('create-user')
   .description('Create user and generate access & refresh tokens')

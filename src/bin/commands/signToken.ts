@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TokenManager } from '../../src/token/tokenManager';
+import { TokenManager } from '../../token/tokenManager';
 
 export const signCommand = new Command('sign-token')
   .description('Generate a new access/refresh token')

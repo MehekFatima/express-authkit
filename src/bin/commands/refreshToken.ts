@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { TokenManager } from '../../src/token/tokenManager';
+import { TokenManager } from '../../token/tokenManager';
 
 export const refreshCommand = new Command('refresh-token')
   .description('Generate a new access token using refresh token')

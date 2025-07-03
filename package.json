@@ -11,7 +11,7 @@
     }
   },
   "bin": {
-    "express-authkit": "dist/cli.js"
+    "express-authkit": "dist/bin/cli.js"
   },
   "scripts": {
     "build": "tsup && tsc -p tsconfig.build.json",
