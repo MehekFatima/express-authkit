@@ -1,6 +1,6 @@
 {
   "name": "express-authx",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Plug-and-play authentication middleware for Express with JWT, refresh tokens, RBAC, sessions, and built-in CLI.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
