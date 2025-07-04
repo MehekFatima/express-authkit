@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/express-authx.svg)](https://www.npmjs.com/package/express-authx)
 [![npm downloads](https://img.shields.io/npm/dm/express-authx.svg)](https://www.npmjs.com/package/express-authx)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
-[![Made with ❤️ by Mehek](https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F%20by%20Mehek-blueviolet)](https://github.com/MehekFatima)
+
 
 A simple, fully-configurable authentication kit for Express.js apps using JWT, Refresh Tokens, Role-Based Access Control (RBAC), Redis sessions, and a powerful CLI – all in TypeScript.
 
@@ -48,6 +48,9 @@ These are used to securely sign & verify tokens.
 ```ts
 import express from 'express';
 import { TokenManager, authMiddleware } from 'express-authx';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 
@@ -85,14 +88,49 @@ const redisStore = new RedisStore('redis://localhost:6379');
 await redisStore.setSession('user123', { isLoggedIn: true });
 const data = await redisStore.getSession('user123');
 ```
+
+## TypeScript Support
+
+>Note: If you're using plain JavaScript, req.user is available without any additional setup.
+
+If you're using TypeScript, you need to tell Express that your `req.user` property exists.
+
+Create a file like `types/express-authx.d.ts` in your project:
+
+```ts
+// types/express-authx.d.ts
+import 'express';
+import type { TokenPayload } from 'express-authx';
+
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: TokenPayload;
+  }
+}
+```
+Then include this file in your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "typeRoots": ["./types", "./node_modules/@types"]
+  }
+}
+```
+
 ## CLI Usage
 
-The CLI saves you time while developing or testing. Use it to generate, decode, or refresh tokens instantly.
+The CLI saves you time while developing or testing. Use it to generate, decode, or refresh tokens instantly. This CLI provides 5 core commands
 
 > Run any command below with `npx express-authkit` OR install globally with `npm i -g express-authx`.
 
 ### 1. Create a new user token
+Purpose: Generate a new access and refresh token for a user.
 
+```bash
+npx express-authkit create-user --id <user-id> --role <user-role>
+```
+#### Example
 ```bash
 npx express-authkit create-user --id=joe --role=admin
 ```
@@ -103,24 +141,94 @@ You’ll get:
 Access Token: <...>
 Refresh Token: <...>
 ```
-### 2. Verify a token
+
+### 2. sign-token
+#### Purpose: Sign an arbitrary payload (e.g., ID and role) into a token.
 
 ```bash
-npx express-authkit verify-token --token <your-token>
+npx express-authkit sign-token --id <user-id> --role <role>
 ```
-You can also verify refresh token:
+#### Optional
+
+- `--access-secret <secret>`
+
+- `--access-expiry <expiry>`
+
+#### Example
+
 ```bash
-npx express-authkit verify-token --token <your-refresh-token> --refresh=true
+npx express-authkit sign-token --id=alice --role=moderator --access-secret=mysecret
 ```
-### 3. Decode a token (without verifying)
+
+
+### 3. Verify a token
+#### Purpose: Verify the validity of a JWT (access or refresh).
+
+#### Optional:
+
+- `--refresh` — Verifies using refresh token logic
+
+- `--access-secret <secret>` — Provide secret manually
+
+```bash
+npx express-authkit verify-token --token <jwt-token>
+```
+#### Example:
+
+- Access token:
+```bash
+npx express-authkit verify-token --token <access-token>
+```
+- Refresh token:
+```bash
+npx express-authkit verify-token --token <your-refresh-token> --refresh
+```
+### 4. Decode a token (without verifying)
+#### Purpose: Decode a JWT without verifying the signature.
+
+```bash
+npx express-authkit decode-token --token <jwt-token>
+
+```
+
+#### Example
 ```bash
 npx express-authkit decode-token --token <your-token>
 ```
-### 4. Refresh an expired access token
+You’ll get:
+```json
+{
+  "id": "user123",
+  "role": "admin",
+  "iat": 1751550000,
+  "exp": 1751553600
+}
+```
+
+### 5. Refresh an expired access token
+
+#### Purpose: Refresh an expired access token using a valid refresh token.
+
 ```bash
-npx express-authkit refresh-token --refresh <your-refresh-token>
+npx express-authkit refresh-token --refresh-token <refresh-token>
+```
+#### Optional
+- `--access-secret <secret>`
+
+- `--refresh-secret <secret>`
+
+- `--access-expiry <expiry>`
+
+- `--refresh-expiry <expiry>`
+
+### To view help for all commands at once:
+
+```bash
+npx express-authkit --help
 ```
 
 #### Contributions are always welcome!
 
 See `contributing.md` for ways to get started.
+
+[![Made with ❤️ by Mehek](https://img.shields.io/badge/Made%20with-%E2%9D%A4%EF%B8%8F%20by%20Mehek-blueviolet)](https://github.com/MehekFatima)

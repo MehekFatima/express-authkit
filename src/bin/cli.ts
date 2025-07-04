@@ -5,7 +5,6 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import figlet from 'figlet';
 
-// import your commands here
 import { createUserCommand } from './commands/createUser';
 import { signCommand } from './commands/signToken';
 import { verifyCommand } from './commands/verifyToken';
