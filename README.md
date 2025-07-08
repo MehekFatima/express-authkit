@@ -5,7 +5,19 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 
 
-A simple, fully-configurable authentication kit for Express.js apps using JWT, Refresh Tokens, Role-Based Access Control (RBAC), Redis sessions, and a powerful CLI – all in TypeScript.
+## 📚 Table of Contents
+
+- [Why express-authx?](#-why-express-authx)
+- [Installation](#installation)
+- [Quick Usage](#quick-usage)
+- [Role-Based Access](#2-role-based-access)
+- [MongoDB Token Blacklisting](#3-mongodb-token-blacklisting-logout)
+- [MongoDB Session Storage](#4-mongodb-session-storage-optional)
+- [TypeScript Support](#typescript-support)
+- [CLI Usage](#cli-usage)
+
+
+A simple, fully-configurable authentication kit for Express.js apps using JWT, Refresh Tokens, Role-Based Access Control (RBAC), MongoDB sessions, and a powerful CLI – all in TypeScript.
 
 ---
 
@@ -19,11 +31,13 @@ Most authentication libraries either:
 **`express-authx`** solves that by giving you:
 
 - Full control over your auth logic  
+- Access token support via Bearer headers and HTTP-only cookies
 - Secure access & refresh token support  
 - Role-based route protection  
-- Optional Redis-based session management  
-- Developer CLI to generate/verify/refresh tokens  
-- Super easy plug-and-play setup
+- Optional Mongodb-based session management  
+- Powerful CLI for token generation & testing 
+- Written in TypeScript, supports JS
+
 
 ---
 
@@ -36,37 +50,46 @@ npm install express-authx
 Create a .env file in your project root and define:
 
 ```bash
-ACCESS_SECRET=your_access_token_secret
-REFRESH_SECRET=your_refresh_token_secret
+ACCESS_SECRET=your-access-secret
+REFRESH_SECRET=your-refresh-secret
+MONGO_URI=mongodb://localhost:27017
 ```
 These are used to securely sign & verify tokens.
 
-## Quick Start
-
-### 1. Protect Express Routes with Middleware
+## Quick Usage
 
 ```ts
 import express from 'express';
-import { TokenManager, authMiddleware } from 'express-authx';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import cookieParser from 'cookie-parser';
+import { TokenManager, authMiddleware, MongoTokenBlacklist } from 'express-authx';
 
 const app = express();
+app.use(express.json());
+app.use(cookieParser());
 
 const tokenManager = new TokenManager(
   { secret: process.env.ACCESS_SECRET!, expiresIn: '15m' },
   { secret: process.env.REFRESH_SECRET!, expiresIn: '7d' }
 );
 
-// Attach middleware to secure routes
-app.use(authMiddleware(tokenManager));
+const blacklist = new MongoTokenBlacklist(process.env.MONGO_URI!);
 
-app.get('/protected', (req, res) => {
-  res.json({ message: 'Hello Secure World!', user: req.user });
+// IMPORTANT: Initialize MongoTokenBlacklist before use
+await blacklist.init();
+
+app.post('/login', (req, res) => {
+  const { id, role } = req.body;
+  const tokens = tokenManager.signTokens({ id, role });
+
+  res.cookie('accessToken', tokens.accessToken, { httpOnly: true });
+  res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true });
+  res.json(tokens);
 });
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+app.get('/profile', authMiddleware(tokenManager, blacklist), (req, res) => {
+  res.json({ message: 'Welcome', user: req.user });
+});
+
 ```
 
 ### 2. Role-Based Access
@@ -74,19 +97,39 @@ app.listen(3000, () => console.log('Server running on port 3000'));
 ```ts
 import { protectMiddleware } from 'express-authx';
 
-app.get('/admin-only', protectMiddleware(['admin']), (req, res) => {
-  res.send('Only admins allowed');
+app.get('/admin', protectMiddleware(['admin']), (req, res) => {
+  res.send('Admins only');
 });
+
 ```
-### 3. Redis Session Store
+### 3. MongoDB Token Blacklisting (Logout)
 
 ```ts
-import { RedisStore } from 'express-authx';
+import { MongoTokenBlacklist } from 'express-authx';
 
-const redisStore = new RedisStore('redis://localhost:6379');
+const blacklist = new MongoTokenBlacklist(process.env.MONGO_URI!);
+await blacklist.init();
 
-await redisStore.setSession('user123', { isLoggedIn: true });
-const data = await redisStore.getSession('user123');
+await blacklist.blacklistToken(token, expiryInSeconds);
+
+```
+
+##### This invalidates tokens for logout purposes.
+
+### 4. MongoDB Session Storage (Optional)
+```ts
+import { MongoSessionStore } from 'express-authx';
+
+const sessionStore = new MongoSessionStore(process.env.MONGO_URI);
+
+await sessionStore.saveSession({
+  userId: 'demoUser',
+  sessionId: 'uuid-session-id',
+  ip: '::1',
+  userAgent: 'browser-info',
+  createdAt: new Date(),
+  expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+});
 ```
 
 ## TypeScript Support
@@ -118,21 +161,24 @@ Then include this file in your `tsconfig.json`:
 }
 ```
 
+
+
+
 ## CLI Usage
 
-The CLI saves you time while developing or testing. Use it to generate, decode, or refresh tokens instantly. This CLI provides 5 core commands
+The CLI saves you time while developing or testing. Use it to generate, decode, or refresh tokens instantly. This CLI provides 6 core commands
 
-> Run any command below with `npx express-authkit` OR install globally with `npm i -g express-authx`.
+> Run any command below with `npx express-authx` OR install globally with `npm i -g express-authx`.
 
 ### 1. Create a new user token
 Purpose: Generate a new access and refresh token for a user.
 
 ```bash
-npx express-authkit create-user --id <user-id> --role <user-role>
+npx express-authx create-user --id <user-id> --role <user-role>
 ```
 #### Example
 ```bash
-npx express-authkit create-user --id=joe --role=admin
+npx express-authx create-user --id=joe --role=admin
 ```
 You’ll get:
 
@@ -146,7 +192,7 @@ Refresh Token: <...>
 #### Purpose: Sign an arbitrary payload (e.g., ID and role) into a token.
 
 ```bash
-npx express-authkit sign-token --id <user-id> --role <role>
+npx express-authx sign-token --id <user-id> --role <role>
 ```
 #### Optional
 
@@ -157,7 +203,7 @@ npx express-authkit sign-token --id <user-id> --role <role>
 #### Example
 
 ```bash
-npx express-authkit sign-token --id=alice --role=moderator --access-secret=mysecret
+npx express-authx sign-token --id=alice --role=moderator --access-secret=mysecret
 ```
 
 
@@ -171,29 +217,32 @@ npx express-authkit sign-token --id=alice --role=moderator --access-secret=mysec
 - `--access-secret <secret>` — Provide secret manually
 
 ```bash
-npx express-authkit verify-token --token <jwt-token>
+npx express-authx verify-token --token <jwt-token>
 ```
 #### Example:
 
 - Access token:
 ```bash
-npx express-authkit verify-token --token <access-token>
+npx express-authx verify-token --token <access-token>
 ```
 - Refresh token:
 ```bash
-npx express-authkit verify-token --token <your-refresh-token> --refresh
+npx express-authx verify-token --token <your-refresh-token> --refresh
 ```
+
+> 💡 If you're using MongoDB blacklisting, always pass the `--mongo` flag when verifying a token. Otherwise, the blacklist won’t be checked.
+
 ### 4. Decode a token (without verifying)
 #### Purpose: Decode a JWT without verifying the signature.
 
 ```bash
-npx express-authkit decode-token --token <jwt-token>
+npx express-authx decode-token --token <jwt-token>
 
 ```
 
 #### Example
 ```bash
-npx express-authkit decode-token --token <your-token>
+npx express-authx decode-token --token <your-token>
 ```
 You’ll get:
 ```json
@@ -206,11 +255,10 @@ You’ll get:
 ```
 
 ### 5. Refresh an expired access token
-
 #### Purpose: Refresh an expired access token using a valid refresh token.
 
 ```bash
-npx express-authkit refresh-token --refresh-token <refresh-token>
+npx express-authx refresh-token --refresh-token <refresh-token>
 ```
 #### Optional
 - `--access-secret <secret>`
@@ -221,10 +269,45 @@ npx express-authkit refresh-token --refresh-token <refresh-token>
 
 - `--refresh-expiry <expiry>`
 
+### 6. Logout a Token (Blacklist via MongoDB)
+#### Purpose: Invalidate an access token by blacklisting it in MongoDB. Once blacklisted, the token will be rejected on all protected routes.
+
+#### Usage:
+```bash
+npx express-authx logout-token --token <token> --mongo <mongo-uri>
+
+```
+##### Try to Verify Again
+```bash
+npx express-authx verify-token --token <token> --mongo mongodb://localhost:27017
+```
+
+### 7. Set Cookie Token (Dev/Test Server)
+
+#### Purpose:  Starts a small Express server that signs an access token and sets it as an HTTP-only cookie.  
+
+#### Usage:
+
+```bash
+npx express-authx set-cookie-token --id <user-id> --role <user-role> [options]
+```
+
+#### Required Options:
+- `--id <id> `— User ID to embed in the token
+
+- `--role <role>` — User role to embed in the token
+
+#### Optional:
+- `--access-secret <secret>` — Secret key for signing the access token (default: process.env.ACCESS_SECRET or 'default-access')
+
+- `--access-expiry <expiry>` — Access token expiry duration (default: '15m')
+
+- `--port <port>` — Port for the test server (default: 4000)
+
 ### To view help for all commands at once:
 
 ```bash
-npx express-authkit --help
+npx express-authx --help
 ```
 
 #### Contributions are always welcome!

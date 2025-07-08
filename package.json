@@ -1,6 +1,6 @@
 {
   "name": "express-authx",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Plug-and-play authentication middleware for Express with JWT, refresh tokens, RBAC, sessions, and built-in CLI.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -38,7 +38,7 @@
     "middleware",
     "refresh-token",
     "cli",
-    "redis",
+    "mongodb",
     "node"
   ],
   "author": "Mehek Fatima",
@@ -51,15 +51,20 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
+    "@types/mongodb": "^4.0.6",
     "chalk": "^5.4.1",
     "commander": "^14.0.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.0.1",
     "express": "^5.1.0",
     "figlet": "^1.8.1",
+    "ioredis": "^5.6.1",
     "jsonwebtoken": "^8.5.1",
+    "mongodb": "^6.17.0",
     "redis": "^5.5.6"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
     "@types/figlet": "^1.7.0",
     "@types/jest": "^30.0.0",

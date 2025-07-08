@@ -37,4 +37,16 @@ export class TokenManager {
     }
     return null;
   }
+
+  signAccess(payload: TokenPayload): string {
+  return jwt.sign(payload, this.accessOptions.secret, {
+    expiresIn: this.accessOptions.expiresIn
+  } as SignOptions);
+}
+ signRefresh(payload: TokenPayload): string {
+  return jwt.sign(payload, this.refreshOptions.secret, {
+    expiresIn: this.refreshOptions.expiresIn
+  } as SignOptions);
+}
+
 }
