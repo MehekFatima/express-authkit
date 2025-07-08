@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { TokenManager } from '../token/tokenManager';
 import { TokenPayload } from '../token/types';
+import { MongoTokenBlacklist } from '../session/MongoTokenBlacklist';
 
 declare global {
   namespace Express {
@@ -10,24 +11,30 @@ declare global {
   }
 }
 
-export function authMiddleware(tokenManager: TokenManager): RequestHandler {
-  return (req, res, next) => {
+export function authMiddleware(tokenManager: TokenManager, blackList?: MongoTokenBlacklist): RequestHandler {
+  
+  return async (req, res, next) => {
     const authHeader = req.headers.authorization;
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+    const cookieToken = req.cookies?.accessToken || null;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ message: 'Missing or invalid Authorization header' });
+    const token = bearerToken || cookieToken;
+
+    if (!token) {
+      res.status(401).json({ message: 'No token provided' });
       return;
     }
 
-    const token = authHeader.split(' ')[1];
-
+    if (blackList && await blackList.isBlacklisted(token)) {
+      res.status(401).json({ message: 'Token has been revoked' });
+      return;
+    }
     try {
       const decoded = tokenManager.verifyAccess(token);
       req.user = decoded;
       next();
     } catch (err) {
       res.status(401).json({ message: 'Invalid or expired token' });
-      return;
     }
   };
 }
